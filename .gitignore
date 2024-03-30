@@ -1,0 +1,5 @@
+*.swo
+*.swp
+output.avi
+settings.txt
+yolov8m.pt
