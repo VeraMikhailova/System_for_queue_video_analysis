@@ -18,12 +18,14 @@ def print_help(output_default_path,output_quality,seconds_in_queue):
 
 # Reads nodes for queue bounding from file
 def get_nodes(path):
-    if not os.path.isfile(path):
+    # Exclude not files and almost empty files (>=1 for n, >=3 for each line, >=4 eol's, means >=14)
+    if (not os.path.isfile(path)) or os.stat(path).st_size < 14:
         return None
     nodes=[]
     with open(path,"rt") as file:
         n=int(file.readline())
-        if n==0:
+        # Polygon must consist of at least 3 nodes
+        if n<3:
             return None
         for i in range(n):
             nodes.append(list(map(int,file.readline().split())))
@@ -47,7 +49,6 @@ def analyse(capture,nodes,out_video,seconds_in_queue):
     model.fuse()
     # Use cpu or gpu for analysis
     FORCE_CPU=True
-    FORCE_CPU=0
     model.to('cpu' if (FORCE_CPU or not torch.cuda.is_available()) else 'cuda')
     # Function for generation polygon and np points array from nodes
     def nodes2poly(nodes):
