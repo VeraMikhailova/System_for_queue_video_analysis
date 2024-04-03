@@ -33,14 +33,15 @@ def get_nodes(path):
 
 # Saves nodes for queue bounding to file
 def save_nodes(path,nodes):
-    with open(path,"wt") as file:
-        file.write(str(len(nodes)))
-        file.write('\n')
-        for node in nodes:
-            file.write(str(node[0]))
-            file.write(' ')
-            file.write(str(node[1]))
+    if not nodes is None:
+        with open(path,"wt") as file:
+            file.write(str(len(nodes)))
             file.write('\n')
+            for node in nodes:
+                file.write(str(node[0]))
+                file.write(' ')
+                file.write(str(node[1]))
+                file.write('\n')
 
 def analyse(capture,nodes,out_video,seconds_in_queue):
     # Load YOLO model using m for speed, specialization - None, verbose - False
@@ -87,11 +88,12 @@ def analyse(capture,nodes,out_video,seconds_in_queue):
                         nodes.append(p)
                         cv2.circle(image,p,5,(255,255,255),-1)
                 cv2.setMouseCallback(window_name,callback)
-                while 1:
+                while True:
                     cv2.imshow(window_name,image)
                     key=cv2.waitKey(WAITKEY_TIME)
                     if key==13:
-                        break
+                        if len(nodes)>=3:
+                            break
                     if key&0xFF==ord('q') or key==27:
                         cv2.destroyAllWindows()
                         return None
