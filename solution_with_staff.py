@@ -10,10 +10,10 @@ SETTINGS_PATH = "./settings.txt"
 
 
 # Prints little info about this script
-def print_help(output_default_path, output_quality, seconds_in_queue):
+def print_help(output_default_path, log_default_path, output_quality, seconds_in_queue):
     print("------------ENG---------------")
     print(
-        f"This is a script for analysing queues.\nEach camera can have different settings file. You can select not existent file to create new one.\nControls: ESC,q - exit. Enter - apply. u - undo. Double click - select point (if new settings file is used you have to provide queue's polygon by selecting points).\nOutput video file will be written to: {output_default_path}. Opportunity to move it will become available after processing the video.\nCurrent output quality is set to {output_quality}.\nPerson will be counted as one in queue if and only if he is inside the polygon set for this camera for at least {seconds_in_queue} seconds.\nThis constants can be changed in {SETTINGS_PATH}"
+            f"This is a script for analysing queues.\nEach camera can have different settings file. You can select not existent file to create new one.\nControls: ESC,q - exit. Enter - apply. u - undo. Double click - select point (if new settings file is used you have to provide queue's polygon by selecting points).\nOutput video file will be written to: {output_default_path}. And log to: {log_default_path}. Opportunity to move it will become available after processing the video.\nCurrent output quality is set to {output_quality}.\nPerson will be counted as one in queue if and only if he is inside the polygon set for this camera for at least {seconds_in_queue} seconds.\nThis constants can be changed in {SETTINGS_PATH}"
     )
     print("------------RUS---------------")
     print(
@@ -71,7 +71,7 @@ def save_nodes(path, nodes):
                     file.write("\n")
 
 
-def analyse(capture, nodes_queue, nodes_staff, out_video, seconds_in_queue):
+def analyse(capture, log, nodes_queue, nodes_staff, out_video, seconds_in_queue):
     # Load YOLO model using m for speed, specialization - None, verbose - False
     model = YOLO("yolov8m.pt", None, False)
     # Fuse Conv2d and BatchNorm2d layers in the model to improve inference speed.
@@ -238,6 +238,7 @@ def analyse(capture, nodes_queue, nodes_staff, out_video, seconds_in_queue):
             ".",
         )
         print("Current time from video start:", current_time)
+        log.write(f'{current_time} {counter_in} {counter_in_delayed} {counter_staff} {counter_out}\n')
         # Alert special cases:
         warned = False
         if counter_in != 0 and counter_staff == 0:
@@ -274,19 +275,21 @@ def analyse(capture, nodes_queue, nodes_staff, out_video, seconds_in_queue):
 output_quality = 100
 fourcc = cv2.VideoWriter_fourcc(*"DIVX")
 output_default_path = "./output.avi"
+log_default_path = "./log.txt"
 seconds_in_queue = 3
 # If settings file does not exist or is almost empty (>=1 quality; >=4 format; >=1 seconds; >=1 filename; >=4 eol) then create it else read current settings
 if (not os.path.isfile(SETTINGS_PATH)) or os.stat(SETTINGS_PATH).st_size < 11:
     with open(SETTINGS_PATH, "wt") as file:
-        file.write("100\nDIVX\n./output.avi\n3\n")
+        file.write("100\nDIVX\n./output.avi\nlog.txt\n3\n")
 else:
     with open(SETTINGS_PATH, "rt") as file:
         output_quality = int(file.readline().strip())
         fourcc = cv2.VideoWriter_fourcc(*file.readline().strip())
         output_default_path = file.readline().strip()
+        log_default_path = file.readline().strip()
         seconds_in_queue = float(file.readline().strip())
 # Infrom user about current settings and some helpful information about this script
-print_help(output_default_path, output_quality, seconds_in_queue)
+print_help(output_default_path, log_default_path, output_quality, seconds_in_queue)
 # Read paths from user
 video_path = input("Provide video path for analysis: ").strip()
 nodes_path = input("Provide camera's settings path: ").strip()
@@ -298,15 +301,18 @@ fps = int(capture.get(cv2.CAP_PROP_FPS))
 # Create video writer and set quality
 out_video = cv2.VideoWriter(output_default_path, fourcc, fps, (width, height))
 out_video.set(cv2.VIDEOWRITER_PROP_QUALITY, output_quality)
+# Open file for writing the log
+log = open(log_default_path,'wt')
 # Read camera settings (polygon)
 nodes = get_nodes(nodes_path)
 # Perform analysis
-nodes = analyse(capture, nodes[0], nodes[1], out_video, seconds_in_queue)
+nodes = analyse(capture, log, nodes[0], nodes[1], out_video, seconds_in_queue)
 # Save camera settings (polygon)
 save_nodes(nodes_path, nodes)
 # Release resources
 out_video.release()
 capture.release()
+log.close()
 # If no correct detection was performed:
 if nodes[0] is None or nodes[1] is None:
     print(
@@ -316,6 +322,12 @@ if nodes[0] is None or nodes[1] is None:
 # Opportunity to move resulting file
 out_path = input(
     f"Where do you whant to place analysed video (path or NONE; current is {output_default_path}): "
+).strip()
+if out_path != "NONE":
+    os.rename(output_default_path, out_path)
+# And to move the log
+log_path = input(
+    f"Where do you whant to place the log (path or NONE; current is {log_default_path}): "
 ).strip()
 if out_path != "NONE":
     os.rename(output_default_path, out_path)
