@@ -228,8 +228,8 @@ def analyse(capture, log, nodes_queue, nodes_staff, out_video, seconds_in_queue)
                         persons_was_time[person_id] = persons_was_time.get(person_id, 0) + current_time - persons_enter_time[person_id]
                         del persons_enter_time[person_id]
         selection = sorted([persons_was_time.get(p, 0) + current_time - persons_enter_time.get(p, current_time) for p in persons_enter_time.keys() | persons_was_time.keys()])
-        selection = selection[-len(selection):]
-        mean_time = sum(selection)/len(selection) if selection else 0
+        selection = selection[-len(selection)//2:]
+        mean_time = sum(selection)/len(selection) if len(selection)>1 else 0
         # Print results to stdout and image
         print(
             "Queue:",
