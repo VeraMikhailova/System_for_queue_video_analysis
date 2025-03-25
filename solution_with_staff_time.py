@@ -245,7 +245,7 @@ def analyse(capture, log, nodes_queue, nodes_staff, out_video, seconds_in_queue)
             "."
         )
         print("Current time from video start:", current_time)
-        log.write(f'{current_time} {counter_in} {counter_in_delayed} {counter_staff} {counter_out}\n')
+        log.write(f'{current_time:.2f} {counter_in} {counter_in_delayed} {counter_staff} {counter_out} {mean_time:.2f}\n')
         # Alert special cases:
         warned = False
         if counter_in != 0 and counter_staff == 0:

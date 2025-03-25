@@ -11,7 +11,7 @@ with open(argv[1]) as log:
     lines=[[*map(float,l.split())] for l in log]
 
 # Sample data
-x,y_in,y_in_delayed,y_staff,y_out=map(list,zip(*lines))
+x,y_in,y_in_delayed,y_staff,y_out,mean_times=map(list,zip(*lines))
 
 # Create a line plot for each dataset
 #plt.plot(x, y_in, marker='o', label='In queue', color='red')

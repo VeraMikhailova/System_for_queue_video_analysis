@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-PREDICT_SIZE=2
+PREDICT_SIZE=20
 
 
 if len(argv)!=4:
@@ -21,7 +21,7 @@ fph=fps*60*60
 hour=int(argv[3])
 
 # Sample data
-x,y_in,y_in_delayed,y_staff,y_out=map(list,zip(*lines))
+x,y_in,y_in_delayed,y_staff,y_out,mean_times=map(list,zip(*lines))
 
 ndays=len(x)//(fph*24)
 
