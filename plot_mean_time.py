@@ -24,7 +24,7 @@ plt.plot(x, [sum(mean_times[i:i+WINDOW])/WINDOW for i in range(len(mean_times))]
 # Add title and labels
 plt.title('Mean time plot')
 plt.xlabel('Time')
-plt.ylabel('Time')
+plt.ylabel('Mean time')
 
 # Show legend
 plt.legend()
